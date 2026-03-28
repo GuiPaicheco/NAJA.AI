@@ -824,7 +824,9 @@
   </style>
 </head>
 <body>
-
+  <audio id="bg-music" loop>
+    <source src="musica.mp3" type="audio/mpeg">
+  </audio>
   <!-- NAV -->
   <nav>
     <a href="#" class="nav-logo">
@@ -1145,6 +1147,12 @@
   </footer>
 
   <script>
+    // Background music playing
+    const music = document.getElementById("bg-music");
+    function startMusic() {
+      music.volume = 1;
+      music.play();
+    }
     // ── SCROLL REVEAL ──
     const reveals = document.querySelectorAll('.reveal');
     const io = new IntersectionObserver(entries => {
