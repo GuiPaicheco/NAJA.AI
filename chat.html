@@ -421,7 +421,10 @@
   </style>
 </head>
 <body>
-
+  <!-- Ambient Looping Sound -->
+    <audio id="bg-sound" loop>
+      <source src="bg-sound.mp3" type="audio/mpeg">
+    </audio>
   <!-- TOP BAR -->
   <div class="topbar">
     <div class="topbar-left">
@@ -525,6 +528,22 @@
   </div>
 
   <script>
+    // Ambient Sound Looping
+    const music = document.getElementById("bg-sound");
+    let musicStarted = false;
+    
+    function startMusicOnce() {
+      if (musicStarted) return;
+      musicStarted = true;
+    
+      music.volume = 1;
+      music.loop = true;
+    
+      music.play().catch(() => {
+        // fallback silencioso se o navegador bloquear
+      });
+    }
+    document.addEventListener("click", startMusicOnce);
   // ═══════════════════════════════════════════════
   //  BANCO DE DADOS MANUAL
   // ═══════════════════════════════════════════════
