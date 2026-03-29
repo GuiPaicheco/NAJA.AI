@@ -825,7 +825,7 @@
 </head>
 <body>
   <!-- Ambient Looping Sound -->
-  <audio id="bg-music" loop>
+  <audio id="bg-sound" loop>
     <source src="bg-sound.mp3" type="audio/mpeg">
   </audio>
   <!-- NAV -->
@@ -1149,10 +1149,24 @@
   <script>
     // Background music playing
     const music = document.getElementById("bg-sound");
+<<<<<<< HEAD
     function startMusic() {
+=======
+    let musicStarted = false;
+    
+    function startMusicOnce() {
+      if (musicStarted) return;
+      musicStarted = true;
+    
+>>>>>>> 27702c532276d2a2cdfb87d770551b87793a477f
       music.volume = 1;
-      music.play();
+      music.loop = true;
+    
+      music.play().catch(() => {
+        // fallback silencioso se o navegador bloquear
+      });
     }
+document.addEventListener("click", startMusicOnce);
     // ── SCROLL REVEAL ──
     const reveals = document.querySelectorAll('.reveal');
     const io = new IntersectionObserver(entries => {
