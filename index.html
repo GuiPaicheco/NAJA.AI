@@ -1149,15 +1149,22 @@
 
   <script>
     // Background music playing
+    const music = document.getElementById("bg-music");
     let musicStarted = false;
-
+    
     function startMusicOnce() {
       if (musicStarted) return;
       musicStarted = true;
     
-      music.volume = 0.3;
-      music.play().catch(() => {});
+      music.volume = 0.25;
+      music.loop = true;
+    
+      music.play().catch(() => {
+        // fallback silencioso se o navegador bloquear
+      });
     }
+
+document.addEventListener("click", startMusicOnce);
 
 document.addEventListener("click", startMusicOnce);
     // ── SCROLL REVEAL ──
