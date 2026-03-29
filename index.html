@@ -1149,14 +1149,14 @@
 
   <script>
     // Background music playing
-    const music = document.getElementById("bg-music");
+    const music = document.getElementById("bg-sound");
     let musicStarted = false;
     
     function startMusicOnce() {
       if (musicStarted) return;
       musicStarted = true;
     
-      music.volume = 0.25;
+      music.volume = 1;
       music.loop = true;
     
       music.play().catch(() => {
