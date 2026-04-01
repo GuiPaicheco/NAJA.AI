@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <!-- FEITO POR: Guilherme Paichco Ferreira -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NAJA.AI — Núcleo de Apoio e Jornada Acadêmica</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="icon" href="snake.png" sizes="any">
+  <link rel="icon" href="snake.png" type="image/png">
+  <link rel="apple-touch-icon" href="snake.png"> <!-- Compatibilidade com cocô de maçã -->
+  <style>
+    /* Site bom com as referências de cores: https://mantine.dev/styles/css-variables-list/ */
+    /* Site bom pra parte visual ou sonora: https://pixabay.com/ */
+    :root {
+      --blue-deep:   #002E7F;
+      --blue-light:  #29B9F9;
+      --gold-deep:   #FED818;
+      --gold-light:  #FFFBAF;
+      --bg:          #04070F;
+      --bg2:         #080D1A;
+      --surface:     rgba(0, 46, 127, 0.12);
+      --border:      rgba(41, 185, 249, 0.18);
+      --text:        #E8F4FF;
+      --muted:       rgba(232, 244, 255, 0.5);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Exo 2', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.025;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* ── BACKGROUND GRID ── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(41,185,249,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(41,185,249,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(1.5rem, 5vw, 4rem);
+      height: 68px;
+      background: rgba(4, 7, 15, 0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+    }
+
+    .nav-logo-text {
+      font-size: 1.25rem;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      background: linear-gradient(90deg, var(--blue-light), var(--gold-deep));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--gold-deep); }
+
+    .nav-cta {
+      background: linear-gradient(135deg, var(--blue-deep), var(--blue-light));
+      color: white !important;
+      padding: 0.5rem 1.25rem;
+      border-radius: 6px;
+      font-weight: 700 !important;
+      transition: opacity 0.2s !important;
+    }
+
+    .nav-cta:hover { opacity: 0.85; color: white !important; }
+
+    /* ── HERO ── */
+    #hero {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 7rem 1.5rem 4rem;
+      overflow: hidden;
+    }
+
+    /* radial glow behind hero */
+    #hero::before {
+      content: '';
+      position: absolute;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(ellipse, rgba(0,46,127,0.55) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    #hero::after {
+      content: '';
+      position: absolute;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(ellipse, rgba(41,185,249,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 0.35rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--blue-light);
+      background: rgba(41,185,249,0.08);
+      margin-bottom: 2rem;
+      animation: fadeUp 0.8s ease both;
+    }
+
+    .hero-badge span { width: 6px; height: 6px; border-radius: 50%; background: var(--blue-light); animation: pulse 2s infinite; }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    .hero-title {
+      font-size: clamp(3rem, 9vw, 7.5rem);
+      font-weight: 900;
+      line-height: 0.95;
+      letter-spacing: -0.02em;
+      animation: fadeUp 0.8s 0.15s ease both;
+    }
+
+    .hero-title .naja {
+      background: linear-gradient(135deg, var(--blue-light) 0%, #4dd4ff 40%, var(--blue-deep) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-title .dot-ai {
+      background: linear-gradient(135deg, var(--gold-deep), var(--gold-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-subtitle {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(0.7rem, 1.5vw, 0.9rem);
+      color: var(--muted);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-top: 1rem;
+      animation: fadeUp 0.8s 0.3s ease both;
+    }
+
+    .hero-desc {
+      max-width: 540px;
+      font-size: 1.05rem;
+      color: var(--muted);
+      line-height: 1.7;
+      margin: 2rem auto 0;
+      animation: fadeUp 0.8s 0.45s ease both;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 2.5rem;
+      animation: fadeUp 0.8s 0.6s ease both;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: linear-gradient(135deg, var(--gold-deep), var(--gold-light));
+      color: #0a0a0a;
+      font-weight: 800;
+      font-size: 0.95rem;
+      padding: 0.85rem 2rem;
+      border-radius: 8px;
+      text-decoration: none;
+      letter-spacing: 0.04em;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 0 30px rgba(254,216,24,0.25);
+    }
+
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 50px rgba(254,216,24,0.4); }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      border: 1px solid var(--border);
+      color: var(--blue-light);
+      font-weight: 700;
+      font-size: 0.95rem;
+      padding: 0.85rem 2rem;
+      border-radius: 8px;
+      text-decoration: none;
+      letter-spacing: 0.04em;
+      background: rgba(41,185,249,0.06);
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .btn-secondary:hover { background: rgba(41,185,249,0.14); border-color: var(--blue-light); }
+
+    /* ── SCROLL INDICATOR ── */
+    .scroll-hint {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      animation: fadeUp 0.8s 1s ease both;
+    }
+
+    .scroll-hint span {
+      font-size: 0.65rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-family: 'Space Mono', monospace;
+    }
+
+    .scroll-line {
+      width: 1px;
+      height: 40px;
+      background: linear-gradient(to bottom, var(--blue-light), transparent);
+      animation: scrollDown 2s infinite;
+    }
+
+    @keyframes scrollDown {
+      0% { opacity: 0; transform: scaleY(0); transform-origin: top; }
+      50% { opacity: 1; transform: scaleY(1); }
+      100% { opacity: 0; transform: scaleY(1); transform-origin: bottom; }
+    }
+
+    /* ── SECTION BASE ── */
+    section {
+      position: relative;
+      z-index: 1;
+      padding: clamp(4rem, 10vw, 8rem) clamp(1.5rem, 5vw, 4rem);
+    }
+
+    .section-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold-deep);
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+
+    .section-title span {
+      background: linear-gradient(90deg, var(--blue-light), var(--gold-deep));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── CHAT DEMO ── */
+    #chat-demo {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .chat-demo-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: center;
+    }
+
+    .chat-window {
+      background: rgba(0,0,0,0.5);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 0 60px rgba(0,46,127,0.3);
+    }
+
+    .chat-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.25rem;
+      background: rgba(0,46,127,0.3);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .chat-header-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--blue-light); animation: pulse 2s infinite; }
+    .chat-header-name { font-weight: 700; font-size: 0.9rem; }
+    .chat-header-sub { font-size: 0.7rem; color: var(--muted); font-family: 'Space Mono', monospace; }
+
+    .chat-body { padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; min-height: 320px; }
+
+    .msg {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      max-width: 85%;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .msg.ai { align-self: flex-start; }
+    .msg.user { align-self: flex-end; }
+
+    .msg-label {
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-family: 'Space Mono', monospace;
+      color: var(--muted);
+    }
+
+    .msg.user .msg-label { text-align: right; }
+
+    .msg-bubble {
+      padding: 0.75rem 1rem;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      line-height: 1.6;
+    }
+
+    .msg.ai .msg-bubble {
+      background: rgba(0,46,127,0.35);
+      border: 1px solid rgba(41,185,249,0.2);
+      border-bottom-left-radius: 4px;
+      color: var(--text);
+    }
+
+    .msg.user .msg-bubble {
+      background: linear-gradient(135deg, rgba(254,216,24,0.15), rgba(255,251,175,0.1));
+      border: 1px solid rgba(254,216,24,0.25);
+      border-bottom-right-radius: 4px;
+      color: var(--gold-light);
+    }
+
+    .chat-input-area {
+      display: flex;
+      gap: 0.5rem;
+      padding: 1rem 1.25rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .chat-input {
+      flex: 1;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.6rem 1rem;
+      color: var(--text);
+      font-family: 'Exo 2', sans-serif;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .chat-input:focus { border-color: var(--blue-light); }
+
+    .chat-send {
+      background: linear-gradient(135deg, var(--blue-deep), var(--blue-light));
+      border: none;
+      border-radius: 8px;
+      width: 38px;
+      height: 38px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      transition: opacity 0.2s;
+    }
+
+    .chat-send:hover { opacity: 0.8; }
+
+    /* ── FEATURES ── */
+    #features { max-width: 1100px; margin: 0 auto; }
+
+    .features-header { text-align: center; margin-bottom: 4rem; }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--blue-deep), var(--blue-light));
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .feature-card:hover { transform: translateY(-4px); border-color: rgba(41,185,249,0.35); box-shadow: 0 20px 60px rgba(0,46,127,0.2); }
+    .feature-card:hover::before { opacity: 1; }
+
+    .feature-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--blue-deep), rgba(41,185,249,0.3));
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .feature-card h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.6rem;
+    }
+
+    .feature-card p {
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    /* ── ARCHITECTURE ── */
+    #architecture {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .arch-inner {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .arch-header { margin-bottom: 3.5rem; }
+
+    .arch-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .arch-card {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .arch-card-head {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .arch-card-head.blue { background: rgba(0,46,127,0.4); }
+    .arch-card-head.gold { background: rgba(254,216,24,0.12); }
+    .arch-card-head.teal { background: rgba(41,185,249,0.1); }
+
+    .arch-card-icon { font-size: 1.4rem; }
+    .arch-card-title { font-weight: 800; font-size: 0.95rem; }
+    .arch-card-sub { font-size: 0.7rem; color: var(--muted); font-family: 'Space Mono', monospace; margin-top: 0.1rem; }
+
+    .arch-card-body { padding: 1.25rem 1.5rem; background: rgba(0,0,0,0.3); }
+
+    .arch-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      font-size: 0.83rem;
+      color: var(--muted);
+      padding: 0.45rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      line-height: 1.5;
+    }
+
+    .arch-item:last-child { border-bottom: none; }
+
+    .arch-item::before {
+      content: '›';
+      color: var(--blue-light);
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* ── TOTEM ── */
+    #totem {
+      max-width: 960px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+
+    .totem-visual {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .totem-3d {
+      width: 220px;
+      height: 380px;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: linear-gradient(160deg, rgba(0,46,127,0.5), rgba(8,13,26,0.9));
+      box-shadow: 0 0 80px rgba(0,46,127,0.4), inset 0 0 40px rgba(41,185,249,0.05);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.5rem 1rem;
+      position: relative;
+    }
+
+    .totem-screen {
+      width: 100%;
+      flex: 1;
+      background: rgba(0,0,0,0.6);
+      border-radius: 12px;
+      border: 1px solid rgba(41,185,249,0.2);
+      margin: 0.75rem 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 1rem;
+    }
+
+    .totem-logo-text {
+      font-size: 1.4rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--blue-light), var(--gold-deep));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .totem-screen-line {
+      width: 70%;
+      height: 2px;
+      background: rgba(41,185,249,0.3);
+      border-radius: 2px;
+    }
+
+    .totem-screen-lines { display: flex; flex-direction: column; gap: 6px; width: 80%; margin-top: 0.5rem; }
+
+    .totem-screen-line-sm {
+      height: 6px;
+      background: rgba(41,185,249,0.15);
+      border-radius: 3px;
+    }
+
+    .totem-screen-line-sm:nth-child(2) { width: 70%; }
+    .totem-screen-line-sm:nth-child(3) { width: 50%; }
+
+    .totem-led {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--blue-light);
+      box-shadow: 0 0 8px var(--blue-light);
+      animation: pulse 2s infinite;
+    }
+
+    .totem-base {
+      width: 50%;
+      height: 10px;
+      background: rgba(41,185,249,0.2);
+      border-radius: 0 0 6px 6px;
+    }
+
+    .totem-content { }
+
+    .totem-content .section-label { margin-bottom: 0.75rem; }
+
+    .totem-content .section-title { margin-bottom: 1.25rem; }
+
+    .totem-content p {
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 0.95rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .totem-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .tag {
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 0.3rem 0.85rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--blue-light);
+      background: rgba(41,185,249,0.06);
+      font-family: 'Space Mono', monospace;
+    }
+
+    /* ── TEAM ── */
+    #team { max-width: 900px; margin: 0 auto; }
+
+    .team-header { text-align: center; margin-bottom: 3.5rem; }
+
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .team-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.75rem 1.25rem;
+      text-align: center;
+      transition: transform 0.3s, border-color 0.3s;
+    }
+
+    .team-card:hover { transform: translateY(-4px); border-color: rgba(254,216,24,0.3); }
+
+    .team-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue-deep), var(--blue-light));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin: 0 auto 1rem;
+      border: 2px solid var(--border);
+    }
+
+    .team-name { font-weight: 800; font-size: 0.95rem; margin-bottom: 0.3rem; }
+    .team-role { font-size: 0.75rem; color: var(--gold-deep); font-family: 'Space Mono', monospace; letter-spacing: 0.06em; margin-bottom: 0.75rem; }
+
+    .team-skills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      justify-content: center;
+    }
+
+    .team-skill {
+      font-size: 0.65rem;
+      color: var(--muted);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 4px;
+      padding: 0.2rem 0.5rem;
+    }
+
+    /* ── CTA ── */
+    #cta {
+      text-align: center;
+      padding: clamp(4rem, 10vw, 8rem) 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #cta::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px;
+      height: 400px;
+      background: radial-gradient(ellipse, rgba(0,46,127,0.4) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .cta-inner { position: relative; max-width: 600px; margin: 0 auto; }
+
+    .cta-inner .section-title { margin-bottom: 1.25rem; }
+
+    .cta-inner p {
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      position: relative;
+      z-index: 1;
+      border-top: 1px solid var(--border);
+      padding: 2rem clamp(1.5rem, 5vw, 4rem);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: gap;
+      gap: 1rem;
+    }
+
+    .footer-left { font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--muted); }
+    .footer-right { font-size: 0.75rem; color: var(--muted); }
+
+    .footer-logo {
+      font-size: 1rem;
+      font-weight: 900;
+      background: linear-gradient(90deg, var(--blue-light), var(--gold-deep));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .chat-demo-inner { grid-template-columns: 1fr; }
+      .arch-grid { grid-template-columns: 1fr; }
+      #totem { grid-template-columns: 1fr; }
+      .totem-visual { order: -1; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Ambient Looping Sound -->
+  <audio id="bg-sound" loop>
+    <source src="bg-sound.mp3" type="audio/mpeg">
+  </audio>
+  <!-- NAV -->
+  <nav>
+    <a href="#" class="nav-logo">
+      <span class="nav-logo-text">NAJA.AI</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#chat-demo">Demonstração</a></li>
+      <li><a href="#features">Funcionalidades</a></li>
+      <li><a href="#architecture">Arquitetura</a></li>
+      <li><a href="#team">Equipe</a></li>
+      <li><a href="chat.html" class="nav-cta">Acessar</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-badge">
+      <span></span>
+      IFMG — Campus Ibirité · Projeto Acadêmico
+    </div>
+
+    <h1 class="hero-title">
+      <span class="naja">NAJA</span><span class="dot-ai">.AI</span>
+    </h1>
+
+    <p class="hero-subtitle">Núcleo de Apoio e Jornada Acadêmica</p>
+
+    <p class="hero-desc">
+      Assistente inteligente para o campus. Acesse informações acadêmicas, orientações e suporte em tempo real — online ou no totem físico.
+    </p>
+
+    <div class="hero-actions">
+      <a href="chat.html" class="btn-primary">🐍 Falar com o NAJA</a>
+      <a href="#architecture" class="btn-secondary">📐 Arquitetura do Projeto</a>
+    </div>
+
+    <div class="scroll-hint">
+      <span>Explorar</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- CHAT DEMO -->
+  <section id="chat-demo">
+    <div class="chat-demo-inner">
+      <div class="chat-window reveal">
+        <div class="chat-header">
+          <div class="chat-header-dot"></div>
+          <div>
+            <div class="chat-header-name">NAJA.AI</div>
+            <div class="chat-header-sub">Assistente Acadêmico · Online</div>
+          </div>
+        </div>
+        <div class="chat-body" id="chat-body">
+          <div class="msg ai">
+            <div class="msg-label">NAJA.AI</div>
+            <div class="msg-bubble">Olá! Sou o NAJA, assistente do IFMG Campus Ibirité. Como posso te ajudar hoje? 🐍</div>
+          </div>
+          <div class="msg user">
+            <div class="msg-label">Você</div>
+            <div class="msg-bubble">Onde será minha aula de Cálculo agora?</div>
+          </div>
+          <div class="msg ai">
+            <div class="msg-label">NAJA.AI</div>
+            <div class="msg-bubble">📍 Sua aula de <strong>Cálculo I</strong> está acontecendo agora na <strong>Sala B-204</strong>, Bloco B, 2º andar. Professor: Dr. Carlos Mendes. Término previsto: 22h00.</div>
+          </div>
+        </div>
+        <div class="chat-input-area">
+          <input class="chat-input" id="chat-input" type="text" placeholder="Pergunte algo ao NAJA..." />
+          <button class="chat-send" id="chat-send">➤</button>
+        </div>
+      </div>
+
+      <div class="reveal">
+        <div class="section-label">Interface de Chat</div>
+        <h2 class="section-title">Informação acadêmica <span>na ponta dos dedos</span></h2>
+        <p style="color:var(--muted);line-height:1.7;margin-top:1.25rem;font-size:0.95rem;">
+          O NAJA responde em linguagem natural. Pergunte sobre aulas, professores, localização de salas, calendário acadêmico, regulamentos e muito mais.
+        </p>
+        <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:2rem;">
+          <div style="display:flex;align-items:center;gap:0.75rem;font-size:0.88rem;color:var(--muted);">
+            <span style="color:var(--blue-light);font-size:1rem;">✓</span> Integração com banco de dados do campus
+          </div>
+          <div style="display:flex;align-items:center;gap:0.75rem;font-size:0.88rem;color:var(--muted);">
+            <span style="color:var(--blue-light);font-size:1rem;">✓</span> Disponível 24 horas, 7 dias por semana
+          </div>
+          <div style="display:flex;align-items:center;gap:0.75rem;font-size:0.88rem;color:var(--muted);">
+            <span style="color:var(--blue-light);font-size:1rem;">✓</span> Acesso por RA do aluno
+          </div>
+          <div style="display:flex;align-items:center;gap:0.75rem;font-size:0.88rem;color:var(--muted);">
+            <span style="color:var(--blue-light);font-size:1rem;">✓</span> Suporte a voz e texto (totem)
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section>
+    <div id="features">
+      <div class="features-header reveal">
+        <div class="section-label">Funcionalidades</div>
+        <h2 class="section-title">Tudo que o campus <span>precisa saber</span></h2>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card reveal">
+          <div class="feature-icon">🗓️</div>
+          <h3>Calendário Acadêmico</h3>
+          <p>Datas de provas, feriados, início e fim de semestres, eventos institucionais — tudo centralizado e atualizado.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon">📍</div>
+          <h3>Localização no Campus</h3>
+          <p>Encontre salas, laboratórios, secretaria, biblioteca e outros espaços do campus com orientações precisas.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon">👨‍🏫</div>
+          <h3>Professores e Contatos</h3>
+          <p>Consulte quem é cada professor, onde encontrá-lo, horário de atendimento e contato direto.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon">📋</div>
+          <h3>Regulamentos e Normas</h3>
+          <p>Acesso rápido às regras institucionais, regulamento acadêmico e normas de convivência.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon">🚌</div>
+          <h3>Transporte e Rotinas</h3>
+          <p>Horários de ônibus, informações práticas do dia a dia e dicas de organização para o aluno.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon">🌡️</div>
+          <h3>Dados em Tempo Real</h3>
+          <p>Temperatura, hora atual, eventos do dia e outras informações dinâmicas integradas ao hardware do totem.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ARCHITECTURE -->
+  <section id="architecture">
+    <div class="arch-inner">
+      <div class="arch-header reveal">
+        <div class="section-label">Arquitetura do Sistema</div>
+        <h2 class="section-title">Três pilares, <span>uma solução</span></h2>
+        <p style="color:var(--muted);margin-top:1rem;max-width:560px;line-height:1.7;font-size:0.95rem;">
+          O NAJA.AI une tecnologia, hardware e design em uma arquitetura interdisciplinar robusta, desenvolvida do zero pela equipe.
+        </p>
+      </div>
+      <div class="arch-grid">
+        <div class="arch-card reveal">
+          <div class="arch-card-head blue">
+            <div class="arch-card-icon">💻</div>
+            <div>
+              <div class="arch-card-title">Software & IA</div>
+              <div class="arch-card-sub">Guilherme · Ítalo</div>
+            </div>
+          </div>
+          <div class="arch-card-body">
+            <div class="arch-item">LLM para respostas contextuais</div>
+            <div class="arch-item">Backend em Node.js / Python</div>
+            <div class="arch-item">Banco de dados Supabase</div>
+            <div class="arch-item">Frontend web responsivo</div>
+            <div class="arch-item">API de integração com totem</div>
+          </div>
+        </div>
+        <div class="arch-card reveal">
+          <div class="arch-card-head gold">
+            <div class="arch-card-icon">⚡</div>
+            <div>
+              <div class="arch-card-title">Eletrônica & Hardware</div>
+              <div class="arch-card-sub">Gabriel</div>
+            </div>
+          </div>
+          <div class="arch-card-body">
+            <div class="arch-item">Raspberry Pi ou similar</div>
+            <div class="arch-item">Tela touchscreen</div>
+            <div class="arch-item">Sistema de áudio (mic + alto-falante)</div>
+            <div class="arch-item">Sensor de presença + LEDs</div>
+            <div class="arch-item">Estrutura interna organizada</div>
+          </div>
+        </div>
+        <div class="arch-card reveal">
+          <div class="arch-card-head teal">
+            <div class="arch-card-icon">🎨</div>
+            <div>
+              <div class="arch-card-title">Design & Visual</div>
+              <div class="arch-card-sub">Arthur</div>
+            </div>
+          </div>
+          <div class="arch-card-body">
+            <div class="arch-item">Identidade visual completa</div>
+            <div class="arch-item">Interface e UX do sistema</div>
+            <div class="arch-item">Design do totem físico</div>
+            <div class="arch-item">Modelagem 3D + impressão</div>
+            <div class="arch-item">Feedback sonoro e animações</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TOTEM -->
+  <section>
+    <div id="totem">
+      <div class="totem-visual reveal">
+        <div class="totem-3d">
+          <div class="totem-led"></div>
+          <div class="totem-screen">
+            <div class="totem-logo-text">NAJA.AI</div>
+            <div class="totem-screen-line"></div>
+            <div class="totem-screen-lines">
+              <div class="totem-screen-line-sm"></div>
+              <div class="totem-screen-line-sm"></div>
+              <div class="totem-screen-line-sm"></div>
+            </div>
+          </div>
+          <div class="totem-base"></div>
+        </div>
+      </div>
+      <div class="totem-content reveal">
+        <div class="section-label">Ambiente Físico</div>
+        <h2 class="section-title">O totem <span>inteligente</span></h2>
+        <p>
+          Presente fisicamente no campus, o totem NAJA.AI funciona como uma recepcionista virtual automatizada — disponível para todos os alunos, professores e visitantes sem espera ou atendimento manual.
+        </p>
+        <div class="totem-tags">
+          <span class="tag">Touchscreen</span>
+          <span class="tag">Reconhecimento de Voz</span>
+          <span class="tag">Sensor de Presença</span>
+          <span class="tag">LEDs de Feedback</span>
+          <span class="tag">Libras (futuro)</span>
+          <span class="tag">24/7 Online</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEAM -->
+  <section style="background:var(--bg2);border-top:1px solid var(--border);">
+    <div id="team">
+      <div class="team-header reveal">
+        <div class="section-label">A Equipe</div>
+        <h2 class="section-title">Quem faz o <span>NAJA acontecer</span></h2>
+      </div>
+      <div class="team-grid">
+        <div class="team-card reveal">
+          <div class="team-avatar">🎨</div>
+          <div class="team-name">Arthur Heringe</div>
+          <div class="team-role">Design & Visual</div>
+          <div class="team-skills">
+            <span class="team-skill">Modelagem 3D</span>
+            <span class="team-skill">Impressão 3D</span>
+            <span class="team-skill">Visual Design</span>
+          </div>
+        </div>
+        <div class="team-card reveal">
+          <div class="team-avatar">⚡</div>
+          <div class="team-name">Gabriel Rodrigues</div>
+          <div class="team-role">Eletrônica & Hardware</div>
+          <div class="team-skills">
+            <span class="team-skill">ESP32</span>
+            <span class="team-skill">Eletrônica</span>
+            <span class="team-skill">Elétrica</span>
+          </div>
+        </div>
+        <div class="team-card reveal">
+          <div class="team-avatar">💻</div>
+          <div class="team-name">Guilherme Paicheco</div>
+          <div class="team-role">Programação</div>
+          <div class="team-skills">
+            <span class="team-skill">Inteligência Artificial</span>
+            <span class="team-skill">Full-Stack</span>
+            <span class="team-skill">DB - Supabase</span>
+          </div>
+        </div>
+        <div class="team-card reveal">
+          <div class="team-avatar">🤖</div>
+          <div class="team-name">Ítalo Gabriel</div>
+          <div class="team-role">Programação</div>
+          <div class="team-skills">
+            <span class="team-skill">Inteligência Artificial</span>
+            <span class="team-skill">Backend</span>
+            <span class="team-skill">Integração</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section id="cta">
+    <div class="cta-inner reveal">
+      <div class="section-label">Próximos Passos</div>
+      <h2 class="section-title">O campus mais <span>inteligente começa agora</span></h2>
+      <p>
+        O NAJA.AI é um MVP em desenvolvimento. Cada iteração melhora a experiência de centenas de alunos do IFMG Campus Ibirité. Acompanhe a evolução do projeto.
+      </p>
+      <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+        <a href="chat.html" class="btn-primary">🐍 Falar com o NAJA</a>
+        <a href="#architecture" class="btn-secondary">📐 Ver Arquitetura</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div>
+      <div class="footer-logo">NAJA.AI</div>
+      <div class="footer-left" style="margin-top:0.4rem;">IFMG · Campus Ibirité · 2026</div>
+    </div>
+    <div class="footer-right">
+      Núcleo de Apoio e Jornada Acadêmica · Projeto Interdisciplinar
+    </div>
+  </footer>
+
+  <script>
+    // Background music playing
+    const music = document.getElementById("bg-sound");
+    let musicStarted = false;
+    
+    function startMusicOnce() {
+      if (musicStarted) return;
+      musicStarted = true;
+    
+      music.volume = 1;
+      music.loop = true;
+    
+      music.play().catch(() => {
+        // fallback silencioso se o navegador bloquear
+      });
+    }
+document.addEventListener("click", startMusicOnce);
+    // ── SCROLL REVEAL ──
+    const reveals = document.querySelectorAll('.reveal');
+    const io = new IntersectionObserver(entries => {
+      entries.forEach((e, i) => {
+        if (e.isIntersecting) {
+          setTimeout(() => e.target.classList.add('visible'), i * 80);
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    reveals.forEach(el => io.observe(el));
+
+    // ── DEMO CHAT ──
+    const presets = [
+      { q: "Quem é meu professor de Algoritmos?", a: "👨‍🏫 O professor de <strong>Algoritmos</strong> é o Prof. André Lima. Sala dos professores: Bloco A, sala 105. Horário de atendimento: terças e quintas, 14h–16h." },
+      { q: "Quando é a próxima prova?", a: "📅 Sua próxima avaliação cadastrada é a <strong>Prova P2 de Cálculo I</strong>, marcada para <strong>15 de novembro</strong> às 19h, Sala B-204." },
+      { q: "Onde fica o laboratório de informática?", a: "📍 O <strong>Laboratório de Informática</strong> fica no Bloco C, térreo, sala 002. Funciona das 7h às 22h em dias letivos." },
+      { q: "Qual o horário do ônibus?", a: "🚌 O próximo ônibus para o Terminal de Ibirité sai às <strong>22h15</strong> do portão principal. Há saída adicional às 21h30 direto para BH Centro." },
+    ];
+
+    let presetIdx = 0;
+
+    const chatBody = document.getElementById('chat-body');
+    const chatInput = document.getElementById('chat-input');
+    const chatSend = document.getElementById('chat-send');
+
+    function addMsg(type, html) {
+      const div = document.createElement('div');
+      div.className = `msg ${type}`;
+      div.innerHTML = `<div class="msg-label">${type === 'ai' ? 'NAJA.AI' : 'Você'}</div><div class="msg-bubble">${html}</div>`;
+      chatBody.appendChild(div);
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    function sendMessage() {
+      const val = chatInput.value.trim();
+      if (!val) return;
+      addMsg('user', val);
+      chatInput.value = '';
+
+      setTimeout(() => {
+        const p = presets[presetIdx % presets.length];
+        presetIdx++;
+        addMsg('ai', p.a);
+      }, 700);
+    }
+
+    chatSend.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(); });
+
+    // Cycle preset suggestions
+    chatInput.addEventListener('focus', () => {
+      if (!chatInput.value && presets[presetIdx % presets.length]) {
+        chatInput.placeholder = presets[presetIdx % presets.length].q;
+      }
+    });
+  </script>
+</body>
+</html>
